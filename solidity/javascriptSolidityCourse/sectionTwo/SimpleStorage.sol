@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.8;
 
-// Deployed through REMIX IDE
+pragma solidity ^0.8.8;
 
 contract SimpleStorage {
     // Initialized favoriteNumber
@@ -17,7 +16,7 @@ contract SimpleStorage {
     uint256[] public favoriteNumbersList;
     People[] public people;
 
-    function store(uint256 _favoriteNumber) public {
+    function store(uint256 _favoriteNumber) public virtual {
         favoriteNumber = _favoriteNumber;
     }
 
