@@ -19,7 +19,6 @@ contract FundMe {
     uint256 public constant MINIMUM_USD = 10 * 1e18;
     // Gas cost 21,371 - constant
     // Gas cost 23,471 - no-constant
-    
 
     address[] public funders;
     mapping(address => uint256) public addressToAmountFunded;
@@ -28,28 +27,41 @@ contract FundMe {
     // Gas cost 21,508 - immutable
     // Gas cost 23,622 - not-immutable
 
-    constructor() {
+    AggregatorV3Interface public priceFeed;
+
+    constructor(address priceFeedAddress) {
         i_owner = msg.sender;
+        priceFeed = AggregatorV3Interface(priceFeedAddress);
     }
 
     function fund() public payable {
-        if(msg.value.getConversionRate() < MINIMUM_USD) { revert NotEnoughEth();}
+        if (msg.value.getConversionRate(priceFeed) < MINIMUM_USD) {
+            revert NotEnoughEth();
+        }
         funders.push(msg.sender);
         addressToAmountFunded[msg.sender] = msg.value;
     }
 
     function withdraw() public onlyOwner {
-        for(uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
+        for (
+            uint256 funderIndex = 0;
+            funderIndex < funders.length;
+            funderIndex++
+        ) {
             address funder = funders[funderIndex];
             addressToAmountFunded[funder] = 0;
         }
         funders = new address[](0);
-        (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+        (bool callSuccess, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }("");
         require(callSuccess, "Call failed");
     }
 
     modifier onlyOwner() {
-        if(msg.sender != i_owner) { revert NotOwner(); } // More gas efficent
+        if (msg.sender != i_owner) {
+            revert NotOwner();
+        } // More gas efficent
         // require(msg.sender == i_owner, "Sender is not the owner!"); // Less gas efficent
         _;
     }
@@ -61,5 +73,4 @@ contract FundMe {
     fallback() external payable {
         fund();
     }
-
 }
