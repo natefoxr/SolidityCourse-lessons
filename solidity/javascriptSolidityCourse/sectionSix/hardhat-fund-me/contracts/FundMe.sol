@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.8;
 
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "./PriceConverter.sol";
 
 // Gas cost 837,437 - Original
@@ -9,14 +10,17 @@ import "./PriceConverter.sol";
 // Gas cost 794,008 - Constant and Immutable
 // Gas cost 715,218 - Constant, Immutable and Error Handling
 
-error NotOwner();
-error NotEnoughEth();
-error WithdrawFailed();
+error FundMe__NotOwner();
+error FundMe__NotEnoughEth();
 
+/// @title A contract from crowdfunding or donations
+/// @author Nathan Moudakis
+/// @notice This contract is a funding  contract
+/// @dev This implements price feeds as our library
 contract FundMe {
     using PriceConverter for uint256;
 
-    uint256 public constant MINIMUM_USD = 10 * 1e18;
+    uint256 public constant MINIMUM_USD = 10 * 10**8;
     // Gas cost 21,371 - constant
     // Gas cost 23,471 - no-constant
 
@@ -29,19 +33,30 @@ contract FundMe {
 
     AggregatorV3Interface public priceFeed;
 
+    modifier onlyOwner() {
+        if (msg.sender != i_owner) {
+            revert FundMe__NotOwner();
+        }
+        _;
+    }
+
     constructor(address priceFeedAddress) {
         i_owner = msg.sender;
         priceFeed = AggregatorV3Interface(priceFeedAddress);
     }
 
+    /// @notice This function funds the contract
+    /// @dev This function is executed by running against the ETHUSD chainlink oracle to get a minimum price of $10
     function fund() public payable {
         if (msg.value.getConversionRate(priceFeed) < MINIMUM_USD) {
-            revert NotEnoughEth();
+            revert FundMe__NotEnoughEth();
         }
         funders.push(msg.sender);
         addressToAmountFunded[msg.sender] = msg.value;
     }
 
+    /// @notice This function allows the owner to withdrawn funds from the contract
+    /// @dev This functions iterates through the funders to update a map reseting the funding balance
     function withdraw() public onlyOwner {
         for (
             uint256 funderIndex = 0;
@@ -56,21 +71,5 @@ contract FundMe {
             value: address(this).balance
         }("");
         require(callSuccess, "Call failed");
-    }
-
-    modifier onlyOwner() {
-        if (msg.sender != i_owner) {
-            revert NotOwner();
-        } // More gas efficent
-        // require(msg.sender == i_owner, "Sender is not the owner!"); // Less gas efficent
-        _;
-    }
-
-    receive() external payable {
-        fund();
-    }
-
-    fallback() external payable {
-        fund();
     }
 }

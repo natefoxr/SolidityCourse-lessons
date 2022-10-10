@@ -15,7 +15,9 @@ const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY;
 module.exports = {
     defaultNetwork: "hardhat",
     networks: {
-        hardhat: {},
+        hardhat: {
+            chainId: 31337,
+        },
         goerli: {
             url: GOERLI_RPC_URL,
             accounts: [PRIVATE_KEY],
@@ -45,7 +47,11 @@ module.exports = {
     namedAccounts: {
         deployer: {
             default: 0,
+            1: 0,
             5: 0,
+        },
+        user: {
+            default: 0,
         },
     },
 };
