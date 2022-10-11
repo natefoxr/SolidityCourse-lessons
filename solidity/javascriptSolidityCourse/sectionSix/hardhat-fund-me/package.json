@@ -1,4 +1,7 @@
 {
+  "name": "hardhat Fund Me",
+  "author": "Nate Moudakis",
+  "version": "1.0.0",
   "devDependencies": {
     "@chainlink/contracts": "^0.5.1",
     "@ethersproject/abi": "^5.4.7",
@@ -20,5 +23,11 @@
     "hardhat-waffle": "^0.0.1-security",
     "solidity-coverage": "^0.8.2",
     "typechain": "^8.1.0"
+  },
+  "scripts": {
+    "test": "yarn hardhat test",
+    "test:staging": "yarn hardhat test --network goerli",
+    "format": "yarn prettier --write .",
+    "coverage": "yarn hardhat coverage"
   }
 }

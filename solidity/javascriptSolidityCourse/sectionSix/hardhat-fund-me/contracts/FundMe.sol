@@ -81,6 +81,8 @@ contract FundMe {
         require(success);
     }
 
+    // View / Pure
+
     function getOwner() public view returns (address) {
         return i_owner;
     }
